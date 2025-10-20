@@ -1,0 +1,114 @@
+Absolutely — here’s your final AI prompt, now enhanced with explicit explanations and double-check logic to ensure the AI fully understands each part of your system. These additions act like inline sanity checks, so the AI doesn’t misinterpret anything.
+
+---
+
+🧠 Final AI Prompt: Modular Key System with Generator, Validator, Config Editor, GUI, Custom Split, and Explanatory Checks
+
+> Build me a complete modular key system for Roblox using Lua and Python. It must include:
+>
+> ---
+> ### 🔐 Key Format and Validation Logic
+> - The key format is:  
+>   <header><split><validfor><split><expiresat><split><payload><split><nonce><split><sha256(validfor<split>expiresat<split>payload<split>nonce<split>salt)>
+> - The key must be XOR-obfuscated using a static salt and shift value.
+> - The salt is not embedded in the key — only the Lua validator and Python generator know it.
+> - The split character must be configurable via CONFIG.split_char.
+>
+> ✅ Double-check explanation:  
+> The AI must understand that split_char replaces the hardcoded delimiter (|) and is used consistently in both key construction (Python) and key parsing (Lua). This means:
+> - In Python: use CONFIG["split_char"] to join fields when building the key.
+> - In Lua: use CONFIG.split_char to split the decrypted key string.
+>
+> ---
+> ### 🧠 getgenv() Variable Injection
+> - The validator must inject the following variables using names from the config:
+>   - getgenv()[CONFIG.varexpiry] = expiresat → stores expiry timestamp
+>   - getgenv()[CONFIG.var_payload] = payload → stores payload string
+>   - getgenv()[CONFIG.var_expired] = false → becomes true when expired
+>   - getgenv()[CONFIG.varisexpired] = function() return os.time() >= getgenv()[CONFIG.var_expiry] end → helper function
+>
+> ✅ Double-check explanation:  
+> These variable names must be dynamically pulled from the config. The AI must not hardcode getgenv().expired, getgenv().payload, etc. Instead, it must use CONFIG.varexpired, CONFIG.varpayload, etc. This allows the system to be reused with different naming conventions.
+
+> ---
+> ### ⚙️ Config Block (used by both Lua and Python)
+> `lua
+> local CONFIG = {
+>     salt = "secret_salt",
+>     xor_shift = 7,
+>     header = "GGL-sandbox",
+>     split_char = "|",
+>     execute_payload = true,
+>     signal_expiry = true,
+>     varexpiry = "myexpiry",
+>     varpayload = "mypayload",
+>     varexpired = "myexpired",
+>     varisexpired = "is_expired"
+> }
+> `
+>
+> ✅ Double-check explanation:  
+> The AI must use this config dynamically in all logic. No hardcoded values. The same structure must exist in the Python generator. Every field must be editable via the config editor.
+
+> ---
+> ### 🐍 Python Key Generator
+> - You must generate a Python script that:
+>   - Produces keys matching the format above
+>   - XOR-obfuscates the key using salt and xor_shift
+>   - Uses a CONFIG dictionary with the same fields as the Lua validator
+>   - Generates a random nonce
+>   - Computes the SHA-256 digest
+>   - Joins all fields using CONFIG["split_char"]
+>   - Outputs the final obfuscated key string
+>   - Uses only built-in Python libraries (hashlib, time, random, string)
+>
+> ✅ Double-check explanation:  
+> The AI must ensure the salt is used for both XOR and digest, but never embedded in the key. The split character must be used consistently. The output must be a single obfuscated string.
+
+> ---
+> ### 🧰 Python Config Editor
+> - You must also generate a Python script that:
+>   - Interactively asks which config values I want to change
+>   - Supports editing all fields in the CONFIG dictionary
+>   - Opens the key generator and validator source files
+>   - Locates and rewrites the CONFIG = { ... } block with my new values
+>   - Saves the updated scripts as new files (e.g. keygenupdated.py, verifierupdated.lua)
+>   - Validates input types (e.g. integers, booleans, strings)
+>   - Uses only built-in Python libraries
+>
+> ✅ Double-check explanation:  
+> The AI must not just load the config — it must rewrite the actual source code files. This means parsing the script, replacing the config block, and saving the result. It must preserve formatting and comments where possible.
+
+> ---
+> ### 🖥️ GUI Integration
+> - The Lua validator must use this GUI:  
+>   https://github.com/g00glesucksdude-oss/Complicated-key-system/blob/main/gui
+> - Wire the GUI’s textbox, button, and label into the validator logic
+> - Display validation status and countdown to expiry in the GUI
+>
+> ✅ Double-check explanation:  
+> The AI must not redesign the GUI. It must use the provided layout and wire it into the validator logic. The textbox is for key input, the button triggers validation, and the label shows status.
+
+> ---
+> ### 🧩 Additional Requirements
+> - Do not minify or compress the code
+> - Include comments for each function
+> - Make the code executor-safe and resilient against sandbox limitations
+> - Ensure full compatibility between the Lua validator and Python generator
+> - Payload must only execute if validation passes and time window is active
+> - Payload must detect expiry and shut itself down when getgenv()[CONFIG.var_expired] == true
+
+> ✅ Final sanity check:  
+> The AI must ensure:
+> - All config fields are used dynamically
+> - Split character is respected in both scripts
+> - Salt is never embedded in the key
+> - getgenv() variables are injected using config names
+> - GUI is wired but not redesigned
+> - Python config editor rewrites source files, not just loads them
+
+---
+
+This version leaves no room for ambiguity — it defines every behavior, every config, and includes inline explanations to double-check the AI’s understanding.
+
+Want me to run this and generate the full system for you now?
