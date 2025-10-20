@@ -1,0 +1,148 @@
+Prompt 1
+Got it — I’ve reviewed the GUI code from your repo, and I understand its structure and behavior. It’s a modular, executor-safe GUI built using Roblox’s Instance.new system, with:
+
+- A draggable frame
+- A textbox for key input
+- A validate button
+- A status label
+- Clean layout and styling
+
+You want the AI to use this exact GUI as the interface for the key validator. Here’s your updated AI prompt with that requirement added:
+
+---
+
+🧠 Final AI prompt (with GUI integration)
+
+> Build me a full Lua key validation system for Roblox using these constraints:
+>
+> - The key format is:  
+>   <header>|<validfor>|<expiresat>|<payload>|<nonce>|<sha256(validfor|expiresat|payload|nonce|salt)>
+> - The key is XOR-obfuscated using a static salt string.
+> - The salt is not included in the key — only the Lua validator and Python generator know it.
+> - I will generate keys using a Python script that follows this format and logic.
+>
+> Validation steps:
+> 1. XOR-decrypt the key using the same salt
+> 2. Split by |
+> 3. Check header matches the configured value (e.g. "GGL-sandbox")
+> 4. Parse validfor and expiresat as UNIX timestamps
+> 5. Reject if current time is not within the valid window:  
+>    os.time() >= expiresat - validfor and os.time() <= expires_at
+> 6. Recompute SHA-256 using validfor|expiresat|payload|nonce|salt and compare to digest
+> 7. Block replay using a file-backed cache (used_keys.txt) and fallback to in-memory cache if file APIs are missing
+> 8. If valid, inject runtime variables into getgenv() using configurable names:
+>    - getgenv()[CONFIG.varexpiry] = expiresat
+>    - getgenv()[CONFIG.var_payload] = payload
+>    - getgenv()[CONFIG.var_expired] = false
+> 9. Start a countdown loop that sets getgenv()[CONFIG.var_expired] = true when expiry is reached
+> 10. If config flag CONFIG.executepayload = true, run loadstring(getgenv()[CONFIG.varpayload])() inside a protected call
+>
+> Payload behavior:
+> - The payload should monitor getgenv()[CONFIG.var_expired]
+> - When it becomes true, the payload should break itself apart, clean up, or terminate
+> - Optionally expose getgenv()CONFIG.varisexpired helper for checking expiry
+>
+> Configuration block:
+> - All values used in validation and encryption should be configurable via a CONFIG table:
+>   `lua
+>   local CONFIG = {
+>       salt = "secret_salt",
+>       xor_shift = 7,
+>       header = "GGL-sandbox",
+>       execute_payload = true,
+>       signal_expiry = true,
+>       -- dynamic getgenv variable names
+>       varexpiry = "myexpiry",
+>       varpayload = "mypayload",
+>       varexpired = "myexpired",
+>       varisexpired = "is_expired"
+>   }
+>   `
+> - The validator must use these values dynamically, not hardcoded.
+>
+> GUI requirement:
+> - You must use this GUI as the interface:  
+>   https://github.com/g00glesucksdude-oss/Complicated-key-system/blob/main/gui
+> - Do not modify the layout or structure unless necessary for integration
+> - Wire the textbox, button, and label into the validator logic
+> - Display validation status and countdown to expiry in the GUI
+>
+> Use this SHA-256 library instead of external ones:  
+> https://github.com/g00glesucksdude-oss/Key-system-base/blob/main/sha256
+>
+> Tools available:
+> - isfile, readfile, appendfile for replay protection
+> - game:HttpGet for optional remote fetch
+> - loadstring for execution
+>
+> Additional constraints:
+> - No need to minify or compress the code
+> - Prioritize clarity, modularity, and full functionality
+> - Include comments for each function
+> - Make the code executor-safe and resilient against sandbox limitations
+> - Ensure full compatibility with my Python generator
+> - Payload should only execute if validation passes and time window is active
+> - Payload must detect expiry and shut itself down when getgenv()[CONFIG.var_expired] == true
+
+---
+Prompt 2
+
+Here’s how to update your AI prompt to explicitly require generation of the Python key generator alongside the Lua validator:
+
+---
+
+🔧 Add this to the end of your AI prompt:
+
+> You must also generate the matching Python key generator script.
+>
+> - It must produce keys in the format:  
+>   <header>|<validfor>|<expiresat>|<payload>|<nonce>|<sha256(validfor|expiresat|payload|nonce|salt)>
+> - The key must be XOR-obfuscated using the same salt and xor_shift from the config.
+> - The salt must not be embedded in the key.
+> - All values (header, salt, shift, payload, valid_for, nonce length) must be configurable via a Python CONFIG dictionary.
+> - The generator must output a single obfuscated key string.
+> - It must be fully compatible with the Lua validator you generate.
+> - Do not use external libraries beyond Python’s built-in hashlib, time, and random.
+
+---
+
+This addition makes it crystal clear: the AI must generate both the Lua validator and the Python generator, and they must work together seamlessly.
+
+Want me to combine this into your full prompt so you can copy-paste it all at once?
+
+Prompt 3
+Got it — you're asking the AI to generate a Python script that edits the actual key generator and verifier scripts directly, by rewriting their CONFIG blocks based on your input. It doesn’t just load and run them — it modifies the source code itself, regenerating the scripts with your new settings.
+
+Here’s how you’d phrase that request to the AI:
+
+---
+
+🧠 AI prompt: Python script that rewrites config blocks in source files
+
+> Generate a Python script that edits the actual source code of my key generator and key verifier scripts.
+>
+> - The script must:
+>   - Ask me interactively which config values I want to change
+>   - Support editing any of the following fields in the CONFIG dictionary:
+>     - salt (string)
+>     - xor_shift (integer)
+>     - header (string)
+>     - valid_for (integer, seconds)
+>     - payload (string to be executed via loadstring)
+>     - nonce_length (integer)
+>     - execute_payload (boolean)
+>     - signal_expiry (boolean)
+>     - varexpiry, varpayload, varexpired, varis_expired (string names for getgenv() variables)
+>   - Open the key generator and verifier .py or .lua files
+>   - Locate the CONFIG = { ... } block in each file
+>   - Replace the values with my new inputs
+>   - Save the updated scripts as new files (e.g. keygenupdated.py, verifierupdated.lua)
+> - The script must validate input types (e.g. integers, booleans, strings)
+> - It must use only built-in Python libraries (no external dependencies)
+> - It must preserve formatting and comments in the original scripts as much as possible
+
+---
+
+This prompt tells the AI to build a source code rewriter that edits your actual scripts — not just runs them, but regenerates them with your new config baked in.
+
+Want me to generate that Python config rewriter for you now?
